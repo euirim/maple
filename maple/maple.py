@@ -16,6 +16,7 @@ def main():
     doc4 = file_to_doc("../tests/test4.txt")
     doc5 = file_to_doc("../tests/test5.txt")
     doc6 = file_to_doc("../tests/test6.txt")
+    doc7 = file_to_doc("../tests/test7.txt")
 
     print("test0.txt test\n")
     print("Number of sentences:"
@@ -46,6 +47,11 @@ def main():
     print("Number of sentences:"
             " {}".format(len(summary.tokenize_sentences(doc6))))
     print(summary.tfidf_summarize(doc6, 6))       
+
+    print("test7.txt test\n")
+    print("Number of sentences:"
+            " {}".format(len(summary.tokenize_sentences(doc7))))
+    print(summary.tfidf_summarize(doc7, 10))       
 
 if __name__ == "__main__":
     sys.exit(main())

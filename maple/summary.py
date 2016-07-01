@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 def tfidf_matrix_generator(tokens):
     # Bag of words in vector form
-    vectorizer = TfidfVectorizer(stop_words="english")
+    vectorizer = TfidfVectorizer(stop_words="english",)
     norm_matrix = vectorizer.fit_transform(tokens)
     return norm_matrix * norm_matrix.transpose()
      
@@ -30,8 +30,18 @@ def tokenize_sentences(doc):
 def summarize(doc, max_sentences, generate_matrix):
     sentences = tokenize_sentences(doc)
 
+    # stemming
+    stemmed_sentences = []
+    stemmer = nltk.stem.snowball.EnglishStemmer(ignore_stopwords=True)
+    for i, sentence in enumerate(sentences):
+        words = []
+        for token in sentence.split():
+           words.append(stemmer.stem(token))
+
+        stemmed_sentences.append(" ".join(words))
+
     # matrix creation     
-    matrix = generate_matrix(sentences) 
+    matrix = generate_matrix(stemmed_sentences) 
 
     # graph generation
     graph = nx.from_scipy_sparse_matrix(matrix)
@@ -48,10 +58,10 @@ def summarize(doc, max_sentences, generate_matrix):
     summary = " ".join(summary_sents)
 
     # plotting
-    nx.draw(graph, with_labels=True, node_size=300, node_color="c")
-    plt.title('<C>={}'.format(sentences[0]))
-    plt.show()
-    plt.savefig("~/Desktop/" + summary_sents[0] + ".png", dpi=400)
+#    nx.draw(graph, with_labels=True, node_size=300, node_color="c")
+#    plt.title("text1")
+#    plt.savefig("figures.png", dpi=400)
+#    plt.show()
 
     return summary
 
