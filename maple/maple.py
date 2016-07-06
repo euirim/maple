@@ -5,18 +5,19 @@ a modified version of the TextRank algorithm."""
 import sys
 import summary
     
+
 def file_to_doc(filename):
     with open(filename, "r") as myfile:
-        return myfile.read().replace("\n", " ")
+        return myfile.read() 
 
-def main():
+
+def test_simple_texts():
     doc0 = file_to_doc("../tests/test0.txt")
     doc2 = file_to_doc("../tests/test2.txt")
     doc3 = file_to_doc("../tests/test3.txt")
     doc4 = file_to_doc("../tests/test4.txt")
     doc5 = file_to_doc("../tests/test5.txt")
     doc6 = file_to_doc("../tests/test6.txt")
-    doc7 = file_to_doc("../tests/test7.txt")
 
     print("test0.txt test\n")
     print("Number of sentences:"
@@ -45,13 +46,19 @@ def main():
 
     print("test6.txt test\n")
     print("Number of sentences:"
-            " {}".format(len(summary.tokenize_sentences(doc6))))
-    print(summary.tfidf_summarize(doc6, 6))       
+             " {}".format(len(summary.tokenize_sentences(doc6))))
+    print(summary.tfidf_summarize(doc6, 4))
 
-    print("test7.txt test\n")
-    print("Number of sentences:"
-            " {}".format(len(summary.tokenize_sentences(doc7))))
-    print(summary.tfidf_summarize(doc7, 10))       
+
+def test_diverse_texts():
+    root = "../tests"    
+    pass
+
+
+def main():       
+    test_simple_texts()
+    return 0
+ 
 
 if __name__ == "__main__":
     sys.exit(main())
