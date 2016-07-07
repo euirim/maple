@@ -5,6 +5,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 import networkx as nx
 import matplotlib.pyplot as plt 
 
+from engine.tokenizers import tokenize_to_paragraphs, tokenize_to_sentences
+
 
 def tfidf_matrix_generator(tokens):
     # Bag of words in vector form
@@ -13,31 +15,13 @@ def tfidf_matrix_generator(tokens):
     return norm_matrix * norm_matrix.transpose()
      
 
-def tokenize_sentences(doc):
-    sent_tokenizer = nltk.data.load("tokenizers/punkt/english.pickle")
-    sentences = sent_tokenizer.tokenize(doc)
-
-    for i, sentence in enumerate(sentences):
-        try:
-            if sentences[i+1][0].islower():
-                sentences[i:i+2] = [sentence+" "+sentences[i+1]]
-        except IndexError:
-            continue
-
-    return sentences
-
-
-def tokenize_paragraphs(doc):
-    return doc.split("\n")
-   
-
 # Does not assume newline characters have been eliminated
 def summarize(doc, max_units, generate_matrix, paragraphs=False):
     if paragraphs:
-        units = tokenize_paragraphs(doc)
+        units = tokenize_to_paragraphs(doc)
     else:
         doc = doc.replace("\n", " ")
-        units = tokenize_sentences(doc)
+        units = tokenize_to_sentences(doc)
 
     # stemming
     stemmed_units = []
@@ -79,6 +63,11 @@ def summarize(doc, max_units, generate_matrix, paragraphs=False):
 #    plt.show()
 
     return summary
+
+
+def file_to_doc(filename):
+    with open(filename, "r") as myfile:
+        return myfile.read() 
 
 
 def tfidf_summarize(doc, max_units, paragraphs=False):
