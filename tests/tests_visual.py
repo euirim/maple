@@ -6,7 +6,7 @@ from engine.tokenizers import tokenize_to_sentences, tokenize_to_paragraphs
 def test_summarizer(filename, summarizer, max_units, paragraphs=False):
     print("\n********* " + filename.split("/")[-1] + " TEST" + " *********")
     doc = file_to_doc(filename) 
-    num_words = len(doc)
+    num_words = len(doc.split())
     print("ORIGINAL TEXT STATISTICS")
     if paragraphs:
         num_units = len(tokenize_to_paragraphs(doc)) 

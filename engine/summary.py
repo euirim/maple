@@ -16,7 +16,7 @@ def tfidf_matrix_generator(tokens):
      
 
 # Does not assume newline characters have been eliminated
-def summarize(doc, max_units, generate_matrix, paragraphs=False):
+def summarize(doc, max_units, generate_matrix, paragraphs=False, stem=True):
     if paragraphs:
         units = tokenize_to_paragraphs(doc)
     else:
@@ -24,15 +24,18 @@ def summarize(doc, max_units, generate_matrix, paragraphs=False):
         units = tokenize_to_sentences(doc)
 
     # stemming
-    stemmed_units = []
-    stemmer = nltk.stem.snowball.EnglishStemmer(ignore_stopwords=True)
-    for i, unit in enumerate(units):
-        tokens = nltk.word_tokenize(unit)
-        for i, token in enumerate(tokens):
-            tokens[i] = stemmer.stem(token)
+    if stem:
+        stemmed_units = []
+        stemmer = nltk.stem.snowball.EnglishStemmer(ignore_stopwords=True)
+        for i, unit in enumerate(units):
+            tokens = nltk.word_tokenize(unit)
+            for i, token in enumerate(tokens):
+                tokens[i] = stemmer.stem(token)
 
-        stemmed_units.append("".join([("" if tok in string.punctuation else " ")+tok 
-            for tok in tokens])[1:])
+            stemmed_units.append("".join([("" if tok in string.punctuation else " ")+tok 
+                for tok in tokens])[1:])
+    else:
+        stemmed_units = units
 
     # matrix creation     
     matrix = generate_matrix(stemmed_units) 
@@ -51,6 +54,14 @@ def summarize(doc, max_units, generate_matrix, paragraphs=False):
     summary_units = [units[i] for i, score in summary_indexes] 
     if paragraphs:
         divider = "\n\n"
+        # deal with long paragraphs
+        for i, unit in enumerate(summary_units):
+            print("hello")
+            num_sents = len(tokenize_to_sentences(unit))
+            print(num_sents)
+            if num_sents > 10:
+                summary_units[i] = summarize(unit, int(num_sents/2), generate_matrix,
+                        stem=True)
     else:
         divider = " "
     summary = divider.join(summary_units)
