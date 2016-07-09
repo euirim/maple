@@ -15,14 +15,7 @@ def tfidf_matrix_generator(tokens):
     return norm_matrix * norm_matrix.transpose()
      
 
-# Does not assume newline characters have been eliminated
-def summarize(doc, max_units, generate_matrix, paragraphs=False, stem=True):
-    if paragraphs:
-        units = tokenize_to_paragraphs(doc)
-    else:
-        doc = doc.replace("\n", " ")
-        units = tokenize_to_sentences(doc)
-
+def generate_summary_units(units, max_units, generate_matrix, stem=True):
     # stemming
     if stem:
         stemmed_units = []
@@ -52,18 +45,6 @@ def summarize(doc, max_units, generate_matrix, paragraphs=False, stem=True):
             reverse=True)[:max_units]
     summary_indexes = sorted(pagerank)
     summary_units = [units[i] for i, score in summary_indexes] 
-    if paragraphs:
-        divider = "\n\n"
-        # deal with long paragraphs
-        if False:
-            for i, unit in enumerate(summary_units):
-                num_sents = len(tokenize_to_sentences(unit))
-                if num_sents > 10:
-                    summary_units[i] = summarize(unit, int(num_sents/2), generate_matrix,
-                            stem=True)
-    else:
-        divider = " "
-    summary = divider.join(summary_units)
 
     # plotting
 #    nx.draw(graph, with_labels=True, node_size=150, node_color="c",
@@ -72,7 +53,7 @@ def summarize(doc, max_units, generate_matrix, paragraphs=False, stem=True):
 #    plt.savefig("figures.png", dpi=400)
 #    plt.show()
 
-    return summary
+    return summary_units
 
 
 def file_to_doc(filename):
@@ -80,5 +61,5 @@ def file_to_doc(filename):
         return myfile.read() 
 
 
-def tfidf_summarize(doc, max_units, paragraphs=False):
-    return summarize(doc, max_units, tfidf_matrix_generator, paragraphs)
+def get_tfidf_summary_units(units, max_units, stem):
+    return generate_summary_units(units, max_units, tfidf_matrix_generator, stem)
