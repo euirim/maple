@@ -55,13 +55,12 @@ def summarize(doc, max_units, generate_matrix, paragraphs=False, stem=True):
     if paragraphs:
         divider = "\n\n"
         # deal with long paragraphs
-        for i, unit in enumerate(summary_units):
-            print("hello")
-            num_sents = len(tokenize_to_sentences(unit))
-            print(num_sents)
-            if num_sents > 10:
-                summary_units[i] = summarize(unit, int(num_sents/2), generate_matrix,
-                        stem=True)
+        if False:
+            for i, unit in enumerate(summary_units):
+                num_sents = len(tokenize_to_sentences(unit))
+                if num_sents > 10:
+                    summary_units[i] = summarize(unit, int(num_sents/2), generate_matrix,
+                            stem=True)
     else:
         divider = " "
     summary = divider.join(summary_units)

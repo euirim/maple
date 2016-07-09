@@ -1,6 +1,7 @@
 import os
 from engine.summary import tfidf_summarize, file_to_doc
-from engine.tokenizers import tokenize_to_sentences, tokenize_to_paragraphs
+from engine.tokenizers import (tokenize_to_sentences, tokenize_to_paragraphs,
+tokenize_to_remark)
 
 
 def test_summarizer(filename, summarizer, max_units, paragraphs=False):
@@ -43,12 +44,16 @@ def tests_simple():
 
 def tests_diverse():
     cdir = os.path.dirname(os.path.realpath(__file__)) + "/"
-    test_summarizer(cdir+"data/speech1.txt", tfidf_summarize, 10, paragraphs=True)
+    test_summarizer(cdir+"data/speech1.txt", tfidf_summarize, 5, paragraphs=True)
     test_summarizer(cdir+"data/speech2.txt", tfidf_summarize, 10, paragraphs=True)
-    test_summarizer(cdir+"data/debate.txt", tfidf_summarize, 10, paragraphs=True)
+    test_summarizer(cdir+"data/debate.txt", tfidf_summarize, 20, paragraphs=True)
     test_summarizer(cdir+"data/floor-short.txt", tfidf_summarize, 10)
-    test_summarizer(cdir+"data/floor-long.txt", tfidf_summarize, 10,
+    test_summarizer(cdir+"data/floor-long.txt", tfidf_summarize, 3,
         paragraphs=True)
-    test_summarizer(cdir+"data/interview.txt", tfidf_summarize, 10, paragraphs=True)
+    test_summarizer(cdir+"data/interview.txt", tfidf_summarize, 20,
+            paragraphs=True)
+
+    #doc = file_to_doc(cdir+"data/debate.txt")
+    #tokenize_to_remark(doc)
 
     return 0
