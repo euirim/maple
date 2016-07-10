@@ -29,6 +29,7 @@ class Document(object):
         self.summary = None
 
         self.max_unit_func = max_unit_func
+        self.recursive = False
 
     def build(self):
         self.load()
@@ -91,6 +92,7 @@ class Document(object):
             for i, unit in enumerate(summary_units):
                 doc = Document(text=unit,)
                 doc.max_unit_func = lambda x: 3*x**(1/12)
+                doc.recursive = True
                 doc.build()
                 summary_units[i] = doc.summary
 
@@ -100,6 +102,13 @@ class Document(object):
         while len(self.summary.split()) > 500:
             shorten_summary(degree)
             degree += 1
+
+        # for cases where summary did not cut a lot of sentences
+        # prevent use in recursion
+        if not self.recursive and (len(self.summary.split()) / 
+                self.num_words) > 0.5:
+            self.get_summary(0, 
+                    round(7.5*self.num_sentences**(1/12))) 
         
     def shorten_summary(self, degree):
         doc = Document(text=self.summary, 
