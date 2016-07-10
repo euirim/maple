@@ -4,9 +4,15 @@ from . import tokenizers as tok
 from . import summary as summ
 
 
+# mod = moderate
+def mod_max_unit_func(unit_num):
+    return 5 * unit_num ** (1/12) 
+
+
 class Document(object):
     
-    def __init__(self, filename=None, text=None):
+    def __init__(self, filename=None, text=None,
+            max_unit_func=lambda x: 5*x**(1/12)):
         self.filename = filename
         self.text = text 
         
@@ -22,6 +28,8 @@ class Document(object):
         self.genre = None
         self.summary = None
 
+        self.max_unit_func = max_unit_func
+
     def build(self):
         self.load()
         self.tokenize()
@@ -32,13 +40,17 @@ class Document(object):
         if self.filename:
             self.text = summ.file_to_doc(self.filename)
         else:
-            print("No associated filename.")
- 
+            pass 
+
     def tokenize(self):
-        self.words = self.text.split() 
+        regex = re.compile(r"\((Applause|APPLAUSE|Laughter|LAUGHTER)\.\) ?",
+                re.IGNORECASE)
+        cleaned_text = regex.sub("", self.text)
+
+        self.words = cleaned_text.split() 
         self.sentences = tok.tokenize_to_sentences(
-            self.text.replace("\n", " "))
-        self.paragraphs = tok.tokenize_to_paragraphs(self.text)
+            cleaned_text.replace("\n", " "))
+        self.paragraphs = tok.tokenize_to_paragraphs(cleaned_text)
 
     def get_count(self):
         self.num_words = len(self.words)
@@ -47,55 +59,68 @@ class Document(object):
 
     # both unit_type and num_units must be given to get a fixed summary
     def get_summary(self, unit_type=None, max_units=None, stem=True):
-        if unit_type and max_units:
+        if unit_type is not None and max_units is not None:
+            print("Hello!")
             if unit_type == 0:
                 units = self.sentences
                 divider = " "
             else:
                 units = self.paragraphs 
                 # for proper printing
-                divider = "\n\n"
+                divider = "\n"
 
         else:
-            if self.num_words > 1000 and self.num_paragraphs > 10:
+            if self.num_words > 500 and self.num_paragraphs > 5:
                 units = self.paragraphs
                 unit_type = 1
                 unit_count = self.num_paragraphs
-                divider = "\n\n"
+                divider = "\n"
             else:
                 units = self.sentences
                 unit_type = 0
                 unit_count = self.num_sentences
                 divider = " " 
 
-            max_units = round(6 * unit_count ** (1/9))
+            max_units = round(self.max_unit_func(unit_count))
 
         summary_units = summ.get_tfidf_summary_units(units, max_units, stem)             
+
 
         # for long paragraphs
         if unit_type == 1:
             for i, unit in enumerate(summary_units):
-                if re.match("\((Applause|APPLAUSE|Laughter|LAUGHTER)\.\))",
-                        unit):
-                    del summary_units[i]
-                    continue
-                print(i)
-                doc = Document(text=unit)
+                doc = Document(text=unit,)
+                doc.max_unit_func = lambda x: 3*x**(1/12)
                 doc.build()
                 summary_units[i] = doc.summary
 
         self.summary = divider.join(summary_units) 
+
+        degree = 1 
+        while len(self.summary.split()) > 500:
+            shorten_summary(degree)
+            degree += 1
         
+    def shorten_summary(self, degree):
+        doc = Document(text=self.summary, 
+                max_unit_func=lambda x: (5-degree)*x**(1/12))
+        doc.build()
+        self.summary = doc.summary
+
     def pprint(self):
         print("********* {} *********\n".format(self.filename))
         print("TEXT STATISTICS:")
         print("Word #: {}; Sentence #: {}; Paragraph #: {};\n".format(
-            self.num_words, self.num_paragraphs, self.num_sentences))
+            self.num_words, self.num_sentences, self.num_paragraphs))
 
         print("SUMMARY:\n")
-        print(self.summary)
-        print("\nSUMMARY STATISTICS:")
+        summary_paragraphs = tok.tokenize_to_paragraphs(self.summary) 
+        for sent in summary_paragraphs:
+            print(sent)
+            print("\n")
+
+        print("SUMMARY STATISTICS:")
         print("Word #: {}: Sentence #: {}; Paragraph #: {};\n".format(
             len(self.summary.split()),
-            len(tok.tokenize_to_sentences(self.text)),
-            len(tok.tokenize_to_paragraphs(self.text))))
+            len(tok.tokenize_to_sentences(self.summary)),
+            len(summary_paragraphs),))
