@@ -47,6 +47,8 @@ class Document(object):
         regex = re.compile(r"\((Applause|APPLAUSE|Laughter|LAUGHTER)\.\) ?",
                 re.IGNORECASE)
         cleaned_text = regex.sub("", self.text)
+        # ex: here is what I said:
+        cleaned_text = re.sub(r": ?\n", " ", cleaned_text)
 
         self.words = cleaned_text.split() 
         self.sentences = tok.tokenize_to_sentences(
@@ -61,7 +63,6 @@ class Document(object):
     # both unit_type and num_units must be given to get a fixed summary
     def get_summary(self, unit_type=None, max_units=None, stem=True):
         if unit_type is not None and max_units is not None:
-            print("Hello!")
             if unit_type == 0:
                 units = self.sentences
                 divider = " "
@@ -96,9 +97,15 @@ class Document(object):
 
         self.summary = divider.join(summary_units) 
 
-        summary_ratio = len(self.summary.split()) / self.num_words
+        summary_num_words = len(self.summary.split())
+
+        # for short passages with many short paragraphs (D. Trump)
+        if summary_num_words < 200:
+            self.summary = re.sub(r"\n", " ", self.summary)
+
+        summary_ratio = summary_num_words / self.num_words
         if (not self.recursive and summary_ratio > 0.25):
-            self.shorten_summary(summary_ratio*2, True)
+            self.shorten_summary(summary_ratio*2.5, True)
 
     def shorten_summary(self, degree, recursive):
         doc = Document(text=self.summary, 

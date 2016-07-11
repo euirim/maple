@@ -25,6 +25,10 @@ def tests_simple():
     test_summarizer(cdir+"data/test10.txt")   
     test_summarizer(cdir+"data/test11.txt")   
     test_summarizer(cdir+"data/test12.txt")   
+    test_summarizer(cdir+"data/test13.txt") 
+    test_summarizer(cdir+"data/test14.txt") 
+    test_summarizer(cdir+"data/test15.txt") 
+    test_summarizer(cdir+"data/test16.txt") 
 
     return 0
 
