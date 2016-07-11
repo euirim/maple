@@ -71,7 +71,7 @@ class Document(object):
                 divider = "\n"
 
         else:
-            if self.num_words > 250 and self.num_paragraphs > 5:
+            if self.num_words > 500 and self.num_paragraphs > 5:
                 units = self.paragraphs
                 unit_type = 1
                 unit_count = self.num_paragraphs
@@ -89,34 +89,24 @@ class Document(object):
         # for long paragraphs
         if unit_type == 1:
             for i, unit in enumerate(summary_units):
-                doc = Document(text=unit, max_unit_func=self.max_unit_func)
+                doc = Document(text=unit,)
+                doc.max_unit_func = lambda x: 3*x**(1/12)
                 doc.recursive = True
                 doc.build()
                 summary_units[i] = doc.summary
 
         self.summary = divider.join(summary_units) 
 
-        summary_ratio = len(self.summary.split()) / self.num_words
-        if (not self.recursive and summary_ratio > 0.25):
-            self.shorten_summary(summary_ratio*2, True)
+        degree = 1 
+        while len(self.summary.split()) > 500:
+            self.shorten_summary(degree)
+            degree += 1
 
-    def shorten_summary(self, degree, recursive):
+    def shorten_summary(self, degree):
         doc = Document(text=self.summary, 
                 max_unit_func=lambda x: (5-degree)*x**(1/12))
-        doc.recursive = recursive
         doc.build()
         self.summary = doc.summary
-
-    def shorten_summary_paragraphs(self):
-        pgs = tok.tokenize_to_paragraphs(self.summary)
-        for i, unit in enumerate(pgs): 
-            doc = Document(text=unit)
-            doc.recursive = True
-            doc.build()
-            pgs[i] = doc.summary
-
-        self.summary = "\n".join(pgs)
-
 
     def pprint(self):
         print("********* {} *********\n".format(self.filename))

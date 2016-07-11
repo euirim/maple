@@ -4,7 +4,6 @@ a modified version of the TextRank algorithm."""
 
 import sys
 
-from engine.summary import tfidf_summarize, file_to_doc
 from tests.tests_visual import test_summarizer, tests_simple, tests_diverse 
 
 
@@ -37,7 +36,7 @@ def main(argv):
     else:
         paragraphs = False
 
-    test_summarizer(file_to_doc(argv[0]), tfidf_summarize, argv[1], paragraphs)
+    test_summarizer(filename)
 
     return 0
 
