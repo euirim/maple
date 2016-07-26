@@ -5,6 +5,11 @@ a modified version of the TextRank algorithm."""
 import sys
 
 from tests.tests_visual import test_summarizer, tests_simple, tests_diverse 
+from tests.tests_field import generate_test_files
+
+
+def csv_test():
+    generate_test_files("~/Documents/summ_test_files/selected")
 
 
 def test(simple=True):

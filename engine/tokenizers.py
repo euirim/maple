@@ -1,19 +1,38 @@
 import re
 import nltk
+from nltk.tokenize.punkt import PunktSentenceTokenizer as PST, PunktParameters
 
 
 def tokenize_to_sentences(doc):
     sent_tokenizer = nltk.data.load("tokenizers/punkt/english.pickle")
     sentences = sent_tokenizer.tokenize(doc)
 
+    regex = re.compile(
+            "(M[rRsS]{1,2}|Sen|SEN|Rep|REP|Gov|GOV|Pres|PRES|Jdg|JDG|Jus|JUS|u\.s\.a\.)\.$"
+            )
     for i, sentence in enumerate(sentences):
         try:
             if sentences[i+1][0].islower():
+                sentences[i:i+2] = [sentence+" "+sentences[i+1]]
+
+            if bool(regex.search(sentence)):
                 sentences[i:i+2] = [sentence+" "+sentences[i+1]]
         except IndexError:
             continue
 
     return sentences
+
+
+def tokenize_to_sentences2(doc):
+    punkt_param = PunktParameters()
+    abbreviations = [
+            "u.s.a", "fig", "gov", "sen", "jus", "jdg", "rep", "pres",
+            "mr", "mrs", "ms", "h.r", "s.", "h.b", "s.b", "u.k", "u.n",
+            "u.s.s.r",
+    ]
+    punkt_param.abbrev_types = set(abbreviations)
+    tokenizer = PST(punkt_param)
+    return tokenizer.tokenize(doc)
 
 
 def tokenize_to_paragraphs(doc):

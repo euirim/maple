@@ -1,0 +1,44 @@
+# FIELD TEST SCRIPT
+
+import os
+import pandas
+from engine.documents import Document
+
+
+def csv_to_df(filename):
+    df = pandas.read_csv(filename)    
+    df = df.rename(columns = {"created": "intelligent_summary"})
+    return df 
+
+
+def generate_test_file(srcname, outputdir):
+    df = csv_to_df(srcname)
+    for i, row in df.iterrows():
+        doc = Document(text=row[5])
+        doc.build()
+        df.set_value(i, df.columns[8], doc.summary)
+
+    filepath = outputdir + "/" + srcname.split("/")[-1]
+
+    if not os.path.exists(filepath):
+        print("Hello!")
+        os.makedirs(filepath)
+   
+    df.to_csv(filepath, index=False)
+
+
+def generate_test_files(outputdir):
+    if not os.path.exists(outputdir):
+        print("Hello!")
+    cdir = os.path.dirname(os.path.realpath(__file__)) + "/"
+    files = []
+    for f in os.listdir(cdir+"data/data_field"): 
+        if f.endswith(".csv"):
+            files.append(f)
+
+    print(files)
+    for f in files:
+        generate_test_file(cdir+"data/data_field/"+f, outputdir)
+        print("Finished {}.".format(f))
+
+    return 0

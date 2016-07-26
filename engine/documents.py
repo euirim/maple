@@ -69,14 +69,14 @@ class Document(object):
             else:
                 units = self.paragraphs 
                 # for proper printing
-                divider = "\n"
+                divider = "\n\n"
 
         else:
             if self.num_words > 250 and self.num_paragraphs > 5:
                 units = self.paragraphs
                 unit_type = 1
                 unit_count = self.num_paragraphs
-                divider = "\n"
+                divider = "\n\n"
             else:
                 units = self.sentences
                 unit_type = 0
@@ -90,6 +90,9 @@ class Document(object):
         # for long paragraphs
         if unit_type == 1:
             for i, unit in enumerate(summary_units):
+                if unit == "" or unit == " ":
+                    print("NO UNIT")
+                    continue
                 doc = Document(text=unit, max_unit_func=self.max_unit_func)
                 doc.recursive = True
                 doc.build()
@@ -101,7 +104,7 @@ class Document(object):
 
         # for short passages with many short paragraphs (D. Trump)
         if summary_num_words < 200:
-            self.summary = re.sub(r"\n", " ", self.summary)
+            self.summary = re.sub(r"\n\n", " ", self.summary)
 
         summary_ratio = summary_num_words / self.num_words
         if (not self.recursive and summary_ratio > 0.25):
