@@ -1,0 +1,66 @@
+import operator
+import nltk
+import string
+from sklearn.feature_extraction.text import TfidfVectorizer
+import networkx as nx
+import matplotlib.pyplot as plt 
+
+from engine.tokenizers import tokenize_to_paragraphs, tokenize_to_sentences
+
+
+def tfidf_matrix_generator(tokens):
+    # Bag of words in vector form
+    vectorizer = nltk.data.load("../data/tfidfvectorizer.pk")
+    vectorizer = TfidfVectorizer(stop_words="english",)
+    norm_matrix = vectorizer.fit_transform(tokens)
+    return norm_matrix * norm_matrix.transpose()
+     
+
+def generate_summary_units(units, max_units, generate_matrix, stem=True):
+    # stemming
+    if stem:
+        stemmed_units = []
+        stemmer = nltk.stem.snowball.EnglishStemmer(ignore_stopwords=True)
+        for i, unit in enumerate(units):
+            tokens = nltk.word_tokenize(unit)
+            for i, token in enumerate(tokens):
+                tokens[i] = stemmer.stem(token)
+
+            stemmed_units.append("".join([("" if tok in string.punctuation else " ")+tok 
+                for tok in tokens])[1:])
+    else:
+        stemmed_units = units
+
+    # matrix creation     
+    matrix = generate_matrix(stemmed_units) 
+
+    # graph generation
+    graph = nx.from_scipy_sparse_matrix(matrix)
+
+    # PageRank
+    scores = nx.pagerank_scipy(graph, max_iter=100)
+
+    # generate summary
+    pagerank = sorted(scores.items(), 
+            key=operator.itemgetter(1),
+            reverse=True)[:max_units]
+    summary_indexes = sorted(pagerank)
+    summary_units = [units[i] for i, score in summary_indexes] 
+
+    # plotting
+#    nx.draw(graph, with_labels=True, node_size=150, node_color="c",
+#           font_size=8)
+#    plt.title("text1")
+#    plt.savefig("figures.png", dpi=400)
+#    plt.show()
+
+    return summary_units
+
+
+def file_to_doc(filename):
+    with open(filename, "r") as myfile:
+        return myfile.read() 
+
+
+def get_tfidf_summary_units(units, max_units, stem):
+    return generate_summary_units(units, max_units, tfidf_matrix_generator, stem)

@@ -4,19 +4,19 @@ from nltk.tokenize.punkt import PunktSentenceTokenizer as PST, PunktParameters
 
 
 def tokenize_to_sentences(doc):
-    sent_tokenizer = nltk.data.load("tokenizers/punkt/english.pickle")
+    sent_tokenizer = nltk.data.load("../data/punkt.pk", format="pickle")
     sentences = sent_tokenizer.tokenize(doc)
 
-    regex = re.compile(
-            "(M[rRsS]{1,2}|Sen|SEN|Rep|REP|Gov|GOV|Pres|PRES|Jdg|JDG|Jus|JUS|u\.s\.a\.)\.$"
-            )
+#    regex = re.compile(
+#            "(M[rRsS]{1,2}|Sen|SEN|Rep|REP|Gov|GOV|Pres|PRES|Jdg|JDG|Jus|JUS|u\.s\.a\.)\.$"
+#            )
     for i, sentence in enumerate(sentences):
         try:
             if sentences[i+1][0].islower():
                 sentences[i:i+2] = [sentence+" "+sentences[i+1]]
 
-            if bool(regex.search(sentence)):
-                sentences[i:i+2] = [sentence+" "+sentences[i+1]]
+#            if bool(regex.search(sentence)):
+#                sentences[i:i+2] = [sentence+" "+sentences[i+1]]
         except IndexError:
             continue
 

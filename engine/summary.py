@@ -1,6 +1,7 @@
 import operator
 import nltk
 import string
+import pickle
 from sklearn.feature_extraction.text import TfidfVectorizer
 import networkx as nx
 import matplotlib.pyplot as plt 
@@ -10,7 +11,9 @@ from engine.tokenizers import tokenize_to_paragraphs, tokenize_to_sentences
 
 def tfidf_matrix_generator(tokens):
     # Bag of words in vector form
-    vectorizer = TfidfVectorizer(stop_words="english",)
+    with open("data/tfidfvectorizer.pk", "rb") as trained_vectorizer_file:
+        vectorizer = pickle.loads(trained_vectorizer_file.read())
+#    vectorizer = TfidfVectorizer(stop_words="english",)
     norm_matrix = vectorizer.fit_transform(tokens)
     return norm_matrix * norm_matrix.transpose()
      
