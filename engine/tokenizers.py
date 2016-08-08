@@ -4,7 +4,7 @@ from nltk.tokenize.punkt import PunktSentenceTokenizer as PST, PunktParameters
 
 
 def tokenize_to_sentences(doc):
-    sent_tokenizer = nltk.data.load("../data/punkt.pk", format="pickle")
+    sent_tokenizer = nltk.data.load("../data/punkt_stem.pk", format="pickle")
     sentences = sent_tokenizer.tokenize(doc)
 
 #    regex = re.compile(

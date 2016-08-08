@@ -33,6 +33,7 @@ class Document(object):
 
     def build(self):
         self.load()
+        self.process_text()
         self.tokenize()
         self.get_count()
         self.get_summary()
@@ -43,18 +44,24 @@ class Document(object):
         else:
             pass 
 
-    def tokenize(self):
+    # requires tokenize to have already been called
+    def process_text(self):
+        """
+        Apply quotes to reduce ambiguity.
+        """
         regex = re.compile(r"\((Applause|APPLAUSE|Laughter|LAUGHTER)\.\) ?",
                 re.IGNORECASE)
         cleaned_text = regex.sub("", self.text)
         # ex: here is what I said:
         cleaned_text = re.sub(r": ?\n", " ", cleaned_text)
-        cleaned_text = re.sub(r"^[A-Za-z0-9 ]+\n", "", cleaned_text)
+        cleaned_text = re.sub(r"^[A-Za-z0-9 \.'\-&]*[A-Za-z0-9]+\n", "", cleaned_text)
+        self.text = cleaned_text
 
-        self.words = cleaned_text.split() 
+    def tokenize(self):
+        self.words = self.text.split() 
         self.sentences = tok.tokenize_to_sentences(
-            cleaned_text.replace("\n", " "))
-        self.paragraphs = tok.tokenize_to_paragraphs(cleaned_text)
+            self.text.replace("\n", " "))
+        self.paragraphs = tok.tokenize_to_paragraphs(self.text)
 
     def get_count(self):
         self.num_words = len(self.words)
@@ -89,6 +96,27 @@ class Document(object):
 
             max_units = round(self.max_unit_func(unit_count))
         
+        # quotation ambiguity fixing
+#        if unit_type == 0:
+#            quoted = False
+#            for i, unit in enumerate(units):
+#                unit = unit.strip()
+#                if unit[0] == "\"":
+#                    quoted = True
+#                
+#                if unit[-1] == "\"":
+#                    quoted = False
+#
+#                if quoted:
+#                    if unit[0] == "\"":
+#                        unit = unit + "\""
+#                    elif unit[-1] == "\"":
+#                        unit = "\"" + unit
+#                    else:
+#                        unit = "\"" + unit + "\""
+#
+#                units[i] = unit
+
         summary_units = summ.get_tfidf_summary_units(units, max_units, stem)             
 
         # for long paragraphs

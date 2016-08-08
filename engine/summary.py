@@ -5,13 +5,17 @@ import pickle
 from sklearn.feature_extraction.text import TfidfVectorizer
 import networkx as nx
 import matplotlib.pyplot as plt 
+from nltk.corpus import wordnet
+from nltk.stem.wordnet import WordNetLemmatizer
+from nltk.tokenize import word_tokenize
+from nltk.tag import pos_tag
 
 from engine.tokenizers import tokenize_to_paragraphs, tokenize_to_sentences
 
 
 def tfidf_matrix_generator(tokens):
     # Bag of words in vector form
-    with open("data/tfidfvectorizer.pk", "rb") as trained_vectorizer_file:
+    with open("data/tfidf_stem.pk", "rb") as trained_vectorizer_file:
         vectorizer = pickle.loads(trained_vectorizer_file.read())
 #    vectorizer = TfidfVectorizer(stop_words="english",)
     norm_matrix = vectorizer.fit_transform(tokens)
@@ -19,19 +23,43 @@ def tfidf_matrix_generator(tokens):
      
 
 def generate_summary_units(units, max_units, generate_matrix, stem=True):
-    # stemming
-    if stem:
-        stemmed_units = []
-        stemmer = nltk.stem.snowball.EnglishStemmer(ignore_stopwords=True)
-        for i, unit in enumerate(units):
-            tokens = nltk.word_tokenize(unit)
-            for i, token in enumerate(tokens):
-                tokens[i] = stemmer.stem(token)
+    wnl = WordNetLemmatizer()
+    stemmed_units = []
+    for i, unit in enumerate(units):
+        tokens = nltk.word_tokenize(unit)
+        # pos tagging
+        tagged_tokens = pos_tag(tokens)
 
-            stemmed_units.append("".join([("" if tok in string.punctuation else " ")+tok 
-                for tok in tokens])[1:])
-    else:
-        stemmed_units = units
+        for tok_i, tok in enumerate(tagged_tokens):
+            position = None
+            if tok[1] == "NN" or tok[1] == "NNS" or tok[1] == "NNPS":
+                position = wordnet.NOUN
+            elif "JJ" in tok[1]:
+                position = wordnet.ADJ
+            elif "VB" in tok[1]:
+                position = wordnet.VERB
+            elif "RB" in tok[1]:
+                position = wordnet.ADV
+
+            if position:
+                tokens[tok_i] = wnl.lemmatize(tok[0], position)
+
+        stemmed_units.append("".join([("" if tok in string.punctuation else " ")+tok 
+                for tok in tokens]).strip())
+
+    # stemming
+#    if stem:
+#        stemmed_units = []
+#        stemmer = nltk.stem.snowball.EnglishStemmer(ignore_stopwords=True)
+#        for i, unit in enumerate(units):
+#            tokens = nltk.word_tokenize(unit)
+#            for i, token in enumerate(tokens):
+#                tokens[i] = stemmer.stem(token)
+#
+#            stemmed_units.append("".join([("" if tok in string.punctuation else " ")+tok 
+#                for tok in tokens])[1:])
+#    else:
+#        stemmed_units = units
 
     # matrix creation     
     matrix = generate_matrix(stemmed_units) 

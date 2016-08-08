@@ -5,8 +5,13 @@ a modified version of the TextRank algorithm."""
 import sys
 import codecs
 import pickle
+import string
 
+import nltk
+from nltk.corpus import wordnet
+from nltk.tag import pos_tag
 from nltk.tokenize.punkt import PunktSentenceTokenizer
+from nltk.stem import WordNetLemmatizer
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 from tests.tests_visual import test_summarizer, tests_simple, tests_diverse 
@@ -32,7 +37,7 @@ def test(simple=True):
     print("********* TESTS COMPLETED *********")
 
 
-def train(filename):
+def train(filename, stem=True):
     """
     Given file to use as unsupervised data, train tfidfvectorizer and punkt
     sentence tokenizer and output to pickle in data directory.
@@ -42,7 +47,7 @@ def train(filename):
     abbreviations = [
             "u.s.a", "fig", "gov", "sen", "jus", "jdg", "rep", "pres",
             "mr", "mrs", "ms", "h.r", "s.", "h.b", "s.b", "u.k", "u.n",
-            "u.s.s.r",
+            "u.s.s.r", "u.s",
     ]
 
     print("TRAINING SENTENCE TOKENIZER...")
@@ -51,17 +56,55 @@ def train(filename):
     # add extra abbreviations
     pst._params.abbrev_types.update(abbreviations)    
     print("TRAINED ABBREVIATIONS: \n{}".format(pst._params.abbrev_types))
+    
+    # stemming
+    if stem:
+        wnl = WordNetLemmatizer()
+        print("WORD TOKENIZING TEXT")
+        tokens = nltk.word_tokenize(text)
+        
+        # pos tagging
+        print("POS TAGGING TEXT...")
+        tagged_tokens = pos_tag(tokens)
 
+        print("STEMMING TRAINING TEXT...")
+        for i, tok in enumerate(tagged_tokens):
+            position = None
+            if tok[1] == "NN" or tok[1] == "NNS" or tok[1] == "NNPS":
+                position = wordnet.NOUN
+            elif "JJ" in tok[1]:
+                position = wordnet.ADJ
+            elif "VB" in tok[1]:
+                position = wordnet.VERB
+            elif "RB" in tok[1]:
+                position = wordnet.ADV
+
+            if position:
+                tokens[i] = wnl.lemmatize(tok[0], position)
+
+            if i % 1000000 == 0:
+                print("TOKEN: {}".format(i))
+
+        text = "".join([("" if tok in string.punctuation else " ")+tok 
+                for tok in tokens])
+        text = text.strip() 
+    
     print("TRAINING VECTORIZER...")
     tfv = TfidfVectorizer()
-    tfv.fit(text.split("\n\n"))
-
+    tfv.fit(pst.tokenize(text))
 
     # export trained tokenizer + vectorizer
     print("EXPORTING TRAINED TOKENIZER + VECTORIZER...")
-    with open("data/punkt.pk", "wb") as pst_out:
+    if stem:
+        punkt_out_filename = "data/punkt_stem.pk"
+        tfidf_out_filename = "data/tfidf_stem.pk"
+    else:
+        punkt_out_filename = "data/punkt.pk"
+        tfidf_out_filename = "data/tfidf.pk"
+
+    with open(punkt_out_filename, "wb") as pst_out:
         pickle.dump(pst, pst_out)
-    with open("data/tfidf.pk", "wb") as tfv_out:
+    with open(tfidf_out_filename, "wb") as tfv_out:
         pickle.dump(tfv, tfv_out)
 
     print("EXPORTING COMPLETED")
