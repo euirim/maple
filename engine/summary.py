@@ -17,7 +17,7 @@ def tfidf_matrix_generator(tokens):
     # Bag of words in vector form
     with open("data/tfidf_stem.pk", "rb") as trained_vectorizer_file:
         vectorizer = pickle.loads(trained_vectorizer_file.read())
-#    vectorizer = TfidfVectorizer(stop_words="english",)
+        
     norm_matrix = vectorizer.fit_transform(tokens)
     return norm_matrix * norm_matrix.transpose()
      
@@ -47,20 +47,6 @@ def generate_summary_units(units, max_units, generate_matrix, stem=True):
         stemmed_units.append("".join([("" if tok in string.punctuation else " ")+tok 
                 for tok in tokens]).strip())
 
-    # stemming
-#    if stem:
-#        stemmed_units = []
-#        stemmer = nltk.stem.snowball.EnglishStemmer(ignore_stopwords=True)
-#        for i, unit in enumerate(units):
-#            tokens = nltk.word_tokenize(unit)
-#            for i, token in enumerate(tokens):
-#                tokens[i] = stemmer.stem(token)
-#
-#            stemmed_units.append("".join([("" if tok in string.punctuation else " ")+tok 
-#                for tok in tokens])[1:])
-#    else:
-#        stemmed_units = units
-
     # matrix creation     
     matrix = generate_matrix(stemmed_units) 
 
@@ -76,13 +62,6 @@ def generate_summary_units(units, max_units, generate_matrix, stem=True):
             reverse=True)[:max_units]
     summary_indexes = sorted(pagerank)
     summary_units = [units[i] for i, score in summary_indexes] 
-
-    # plotting
-#    nx.draw(graph, with_labels=True, node_size=150, node_color="c",
-#           font_size=8)
-#    plt.title("text1")
-#    plt.savefig("figures.png", dpi=400)
-#    plt.show()
 
     return summary_units
 
